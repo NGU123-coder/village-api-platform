@@ -109,7 +109,7 @@ app.get('/health/ready', async (req: any, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     res.status(200).json({ success: true, data: { status: 'READY', database: 'CONNECTED' } });
-  } catch (e) {
+  } catch (e: any) {
     logger.error('Readiness probe failed', { requestId: req.requestId, error: e.message });
     res.status(503).json({ success: false, data: { status: 'NOT_READY', database: 'DISCONNECTED' } });
   }
@@ -150,7 +150,7 @@ const gracefulShutdown = async (signal: string) => {
       await prisma.$disconnect();
       logger.info('Prisma disconnected.');
       process.exit(0);
-    } catch (err) {
+    } catch (err: any) {
       logger.error('Error during graceful shutdown', { error: err.message });
       process.exit(1);
     }
