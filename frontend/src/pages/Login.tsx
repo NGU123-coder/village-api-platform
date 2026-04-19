@@ -22,9 +22,6 @@ const Login = () => {
       const response = await api.post('/auth/login', { email, password });
       const { user, token } = response.data.data;
       
-      // CRITICAL FIX: Explicit storage
-      localStorage.setItem('token', token);
-      
       setAuth(user, token);
       navigate(user.role === 'ADMIN' ? '/admin' : '/client');
     } catch (err: any) {

@@ -3,9 +3,6 @@
  */
 
 export const getToken = (): string | null => {
-  const rawToken = localStorage.getItem('token');
-  if (rawToken) return rawToken;
-
   const authStorage = localStorage.getItem('auth-storage');
   if (authStorage) {
     try {

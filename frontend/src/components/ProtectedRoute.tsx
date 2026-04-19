@@ -11,16 +11,12 @@ const ProtectedRoute: React.FC<Props> = ({ children, role }) => {
   const { user, token, isHydrated } = useAuthStore();
   const location = useLocation();
 
-  // Prevent flash by showing nothing until store is rehydrated from localStorage
+  // Prevent flash/redirect by showing nothing until store is rehydrated from localStorage
   if (!isHydrated) {
     return null; 
   }
 
-  // Final check: state token or storage token
-  const authToken = token || localStorage.getItem('token');
-  const isAuthenticated = !!authToken;
-
-  if (!isAuthenticated) {
+  if (!token) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

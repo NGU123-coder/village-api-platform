@@ -39,15 +39,13 @@ api.interceptors.response.use(
     } else {
       // Handle 401 Unauthorized globally
       if (error.response.status === 401) {
-        // Prevent infinite loop if login itself fails
-        if (!error.config.url.includes('/auth/login')) {
+        const { token, logout } = useAuthStore.getState();
+        
+        // Only logout if we were previously logged in
+        if (token && !error.config.url.includes('/auth/login')) {
           console.warn('Session expired or unauthorized. Logging out.');
+          logout();
           
-          // Clear everything
-          localStorage.removeItem('token');
-          useAuthStore.getState().logout();
-          
-          // Force hard redirect to login if we're not already there
           if (!window.location.pathname.includes('/login')) {
             window.location.href = '/login?expired=true';
           }
