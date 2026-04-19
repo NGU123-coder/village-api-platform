@@ -1,0 +1,116 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  role          String    @default("CLIENT") // ADMIN or CLIENT
+  planType      String    @default("FREE") // FREE, PREMIUM, PRO, UNLIMITED
+  planStartDate DateTime? @default(now())
+  planEndDate   DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  apiKeys       ApiKey[]
+  payments      Payment[]
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Float
+  plan      String
+  status    String   // SUCCESS, FAILED, PENDING
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model ApiKey {
+  id         String   @id @default(uuid())
+  keyHash    String   @unique
+  name       String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime?
+  isActive   Boolean  @default(true)
+  logs       ApiLog[]
+
+  @@index([userId])
+}
+
+model ApiLog {
+  id        String   @id @default(uuid())
+  apiKeyId  String
+  apiKey    ApiKey   @relation(fields: [apiKeyId], references: [id])
+  endpoint  String
+  status    Int
+  latency   Int
+  createdAt DateTime @default(now())
+
+  @@index([apiKeyId])
+  @@index([createdAt])
+}
+
+model Country {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  code   String  @unique
+  states State[]
+}
+
+model State {
+  id        Int        @id @default(autoincrement())
+  name      String
+  code      String?    @unique
+  countryId Int
+  country   Country    @relation(fields: [countryId], references: [id])
+  districts District[]
+
+  @@unique([name, countryId])
+}
+
+model District {
+  id           Int           @id @default(autoincrement())
+  name         String
+  code         String?       @unique
+  stateId      Int
+  state        State         @relation(fields: [stateId], references: [id])
+  subDistricts SubDistrict[]
+
+  @@unique([name, stateId])
+}
+
+model SubDistrict {
+  id         Int       @id @default(autoincrement())
+  name       String
+  code       String?   @unique
+  districtId Int
+  district   District  @relation(fields: [districtId], references: [id])
+  villages   Village[]
+
+  @@unique([name, districtId])
+}
+
+model Village {
+  id            Int         @id @default(autoincrement())
+  name          String
+  code          String?     @unique
+  subDistrictId Int
+  subDistrict   SubDistrict @relation(fields: [subDistrictId], references: [id])
+  pinCode       String?
+  population    Int?
+
+  @@unique([name, subDistrictId])
+}
