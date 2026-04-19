@@ -1,19 +1,23 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../config/db';
 
 /**
- * Fetch all states
+ * @openapi
+ * /api/v1/states:
+ *   get:
+ *     summary: Retrieve all states
+ *     responses:
+ *       200:
+ *         description: A list of states.
  */
 export const getStates = async (req: Request, res: Response) => {
   try {
     const states = await prisma.state.findMany({
       orderBy: { name: 'asc' },
     });
-    res.json(states);
+    res.json({ success: true, data: states });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch states' });
+    res.status(500).json({ success: false, message: 'Failed to fetch states' });
   }
 };
 
@@ -27,9 +31,9 @@ export const getDistrictsByState = async (req: Request, res: Response) => {
       where: { stateId: parseInt(stateId as string) },
       orderBy: { name: 'asc' },
     });
-    res.json(districts);
+    res.json({ success: true, data: districts });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch districts' });
+    res.status(500).json({ success: false, message: 'Failed to fetch districts' });
   }
 };
 
@@ -43,9 +47,9 @@ export const getSubDistrictsByDistrict = async (req: Request, res: Response) => 
       where: { districtId: parseInt(districtId as string) },
       orderBy: { name: 'asc' },
     });
-    res.json(subDistricts);
+    res.json({ success: true, data: subDistricts });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch sub-districts' });
+    res.status(500).json({ success: false, message: 'Failed to fetch sub-districts' });
   }
 };
 
@@ -73,6 +77,7 @@ export const getVillagesBySubDistrict = async (req: Request, res: Response) => {
     ]);
 
     res.json({
+        success: true,
         data: villages,
         pagination: {
             total,
@@ -82,28 +87,34 @@ export const getVillagesBySubDistrict = async (req: Request, res: Response) => {
         }
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch villages' });
+    res.status(500).json({ success: false, message: 'Failed to fetch villages' });
   }
 };
 
 /**
- * High-performance autocomplete for village search
- * Returns a standardized format for frontend select components:
- * { value, label, hierarchy }
+ * @openapi
+ * /api/v1/autocomplete:
+ *   get:
+ *     summary: Village search with autocomplete
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Search query
  */
 export const autocomplete = async (req: Request, res: Response) => {
   try {
     const q = (req.query.q as string || '').trim();
 
     if (!q || q.length < 2) {
-      return res.json([]);
+      return res.json({ success: true, data: [] });
     }
 
-    // 1. Optimized Query (Native SQL for pg_trgm support if available, fallback to Prisma)
     let results: any[];
     
     try {
-        // This only works on PostgreSQL with pg_trgm extension
         results = await prisma.$queryRaw`
           SELECT 
             v.id AS value,
@@ -125,7 +136,6 @@ export const autocomplete = async (req: Request, res: Response) => {
           LIMIT 10;
         `;
     } catch (e) {
-        // Fallback for Development/SQLite
         const prismaResults = await prisma.village.findMany({
             where: { name: { contains: q } },
             select: {
@@ -160,7 +170,6 @@ export const autocomplete = async (req: Request, res: Response) => {
         }));
     }
 
-    // 2. Transform to standard format
     const formattedResults = results.map((r) => ({
       value: r.value,
       label: `${r.village} (${r.subDistrict}, ${r.district}, ${r.state})`,
@@ -172,15 +181,18 @@ export const autocomplete = async (req: Request, res: Response) => {
       },
     }));
 
-    res.json(formattedResults);
+    res.json({ success: true, data: formattedResults });
   } catch (error) {
     console.error('Autocomplete API Error:', error);
-    res.status(500).json({ error: 'Autocomplete search failed' });
+    res.status(500).json({ success: false, message: 'Autocomplete search failed' });
   }
 };
 
 /**
- * Generic village search/list (Global)
+ * @openapi
+ * /api/v1/villages:
+ *   get:
+ *     summary: Retrieve all villages with pagination
  */
 export const getVillages = async (req: Request, res: Response) => {
   try {
@@ -204,6 +216,7 @@ export const getVillages = async (req: Request, res: Response) => {
     ]);
 
     res.json({
+        success: true,
         data: villages,
         pagination: {
             total,
@@ -213,6 +226,6 @@ export const getVillages = async (req: Request, res: Response) => {
         }
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch villages' });
+    res.status(500).json({ success: false, message: 'Failed to fetch villages' });
   }
 };
