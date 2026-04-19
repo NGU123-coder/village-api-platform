@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore';
 import { getToken } from '../utils/auth';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://village-api-platform.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://village-api-platform.onrender.com/api/v1',
   timeout: 10000,
 });
 
