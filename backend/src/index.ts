@@ -97,8 +97,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // 5. API Routes (Versioned)
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/client', clientRoutes);
-app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/billing', billingRoutes);
+
+// Mount specific analytics path BEFORE generic /v1 path
+app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1', geoRoutes);
 
 // 6. System & Health Routes

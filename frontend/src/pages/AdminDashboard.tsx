@@ -12,7 +12,7 @@ const AdminDashboard = () => {
     queryKey: ['admin-stats'],
     queryFn: async () => {
       const response = await api.get('/admin/stats');
-      return response.data;
+      return response.data.data;
     },
   });
 

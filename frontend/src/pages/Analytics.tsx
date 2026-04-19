@@ -25,7 +25,7 @@ const Analytics = () => {
     queryKey: ['api-keys'],
     queryFn: async () => {
       const response = await api.get('/client/api-keys');
-      return response.data;
+      return response.data.data;
     },
   });
 
@@ -37,7 +37,7 @@ const Analytics = () => {
       const response = await api.get('/v1/analytics/summary', {
         params: { days, apiKeyId: selectedKey === 'all' ? undefined : selectedKey }
       });
-      return response.data;
+      return response.data.data;
     },
   });
 
@@ -52,7 +52,7 @@ const Analytics = () => {
       const response = await api.get('/v1/analytics/requests-over-time', {
         params: { days, apiKeyId: selectedKey === 'all' ? undefined : selectedKey }
       });
-      return response.data;
+      return response.data.data;
     },
   });
 
@@ -63,7 +63,7 @@ const Analytics = () => {
       const response = await api.get('/v1/analytics/top-endpoints', {
         params: { apiKeyId: selectedKey === 'all' ? undefined : selectedKey }
       });
-      return response.data;
+      return response.data.data;
     },
   });
 

@@ -50,7 +50,7 @@ const AutocompleteInput: React.FC<Props> = ({ apiKey, onSelect }) => {
           params: { q: query },
           headers: { 'x-api-key': apiKey }
         });
-        setResults(response.data);
+        setResults(response.data.data);
         setIsOpen(true);
         setSelectedIndex(-1);
       } catch (err: any) {

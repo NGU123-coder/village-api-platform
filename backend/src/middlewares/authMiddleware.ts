@@ -17,7 +17,7 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
 
     jwt.verify(token, process.env.JWT_SECRET as string, (err: any, user: any) => {
       if (err) {
-        return res.status(403).json({ error: 'Invalid or expired session' });
+        return res.status(401).json({ error: 'Invalid or expired session' });
       }
 
       req.user = user;

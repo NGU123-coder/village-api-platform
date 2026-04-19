@@ -32,8 +32,8 @@ const Register = () => {
       const response = await api.post('/auth/register', { email, password });
       
       console.log('Signup successful, logging in...');
-      setAuth(response.data.user, response.data.token);
-      navigate(response.data.user.role === 'ADMIN' ? '/admin' : '/client');
+      setAuth(response.data.data.user, response.data.data.token);
+      navigate(response.data.data.user.role === 'ADMIN' ? '/admin' : '/client');
     } catch (err: any) {
       console.error('SIGNUP_FRONTEND_ERROR:', err);
       setError(err.message || 'An unexpected error occurred during signup.');

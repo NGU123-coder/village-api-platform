@@ -9,9 +9,9 @@ export const getSummary = async (req: any, res: Response) => {
       apiKeyId as string, 
       days ? parseInt(days as string) : 7
     );
-    res.json(stats);
+    res.json({ success: true, data: stats });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch analytics summary' });
+    res.status(500).json({ success: false, message: 'Failed to fetch analytics summary' });
   }
 };
 
@@ -23,9 +23,9 @@ export const getRequestsOverTime = async (req: any, res: Response) => {
       apiKeyId as string, 
       days ? parseInt(days as string) : 7
     );
-    res.json(stats);
+    res.json({ success: true, data: stats });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch usage trends' });
+    res.status(500).json({ success: false, message: 'Failed to fetch usage trends' });
   }
 };
 
@@ -37,20 +37,20 @@ export const getTopEndpoints = async (req: any, res: Response) => {
       apiKeyId as string, 
       limit ? parseInt(limit as string) : 5
     );
-    res.json(stats);
+    res.json({ success: true, data: stats });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch top endpoints' });
+    res.status(500).json({ success: false, message: 'Failed to fetch top endpoints' });
   }
 };
 
 export const getPlatformStats = async (req: any, res: Response) => {
   try {
     if (req.user.role !== 'ADMIN') {
-      return res.status(403).json({ error: 'Admin access required' });
+      return res.status(403).json({ success: false, message: 'Admin access required' });
     }
     const stats = await analyticsService.getPlatformStats();
-    res.json(stats);
+    res.json({ success: true, data: stats });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch platform stats' });
+    res.status(500).json({ success: false, message: 'Failed to fetch platform stats' });
   }
 };

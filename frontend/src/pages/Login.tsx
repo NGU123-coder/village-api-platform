@@ -20,7 +20,7 @@ const Login = () => {
     
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { user, token } = response.data;
+      const { user, token } = response.data.data;
       
       // CRITICAL FIX: Explicit storage
       localStorage.setItem('token', token);

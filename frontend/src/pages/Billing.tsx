@@ -53,7 +53,7 @@ const Billing = () => {
   const checkoutMutation = useMutation({
     mutationFn: async (planType: string) => {
       const response = await api.post('/v1/billing/checkout', { planType });
-      return response.data;
+      return response.data.data;
     },
     onSuccess: (data) => {
         // Update local user state with new plan
@@ -70,7 +70,7 @@ const Billing = () => {
     queryKey: ['payments'],
     queryFn: async () => {
         const response = await api.get('/v1/billing/history');
-        return response.data;
+        return response.data.data;
     }
   });
 
