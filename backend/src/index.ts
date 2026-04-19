@@ -51,14 +51,19 @@ app.use((req: any, res, next) => {
   next();
 });
 
-// Secure CORS
-const allowedOrigins = [process.env.FRONTEND_URL];
+// 2. Secure CORS Configuration
+const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173'].filter(Boolean);
 app.use(cors({
   origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or Postman)
+    // Also allow any origin in development
     if (!origin || !isProd) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
+
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      // For debugging: log the blocked origin
+      logger.warn('Blocked by CORS', { origin });
       callback(new Error('Not allowed by CORS'));
     }
   },
