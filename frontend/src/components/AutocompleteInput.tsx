@@ -46,7 +46,7 @@ const AutocompleteInput: React.FC<Props> = ({ apiKey, onSelect }) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await api.get('/v1/autocomplete', {
+        const response = await api.get('/autocomplete', {
           params: { q: query },
           headers: { 'x-api-key': apiKey }
         });
