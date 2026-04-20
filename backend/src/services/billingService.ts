@@ -81,9 +81,9 @@ export class BillingService {
     return false; // Valid
   }
 
-  async getAllPayments() {
+  async getAllPayments(userId: string) {
     return await prisma.payment.findMany({
-      include: { user: { select: { email: true } } },
+      where: { userId },
       orderBy: { createdAt: 'desc' },
     });
   }

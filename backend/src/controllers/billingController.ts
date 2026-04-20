@@ -38,7 +38,7 @@ export const downgrade = async (req: any, res: Response) => {
 
 export const getPaymentHistory = async (req: any, res: Response) => {
     try {
-        const payments = await billingService.getAllPayments();
+        const payments = await billingService.getAllPayments(req.user.userId);
         res.json({ success: true, data: payments });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Failed to fetch payments' });
