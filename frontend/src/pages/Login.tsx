@@ -23,7 +23,7 @@ const Login = () => {
     console.log('Sending Login Payload:', payload);
     
     try {
-      const response = await api.post('/auth/login', payload, {
+      const response = await api.post('auth/login', payload, {
         headers: { 'Content-Type': 'application/json' }
       });
       const { user, token } = response.data.data;

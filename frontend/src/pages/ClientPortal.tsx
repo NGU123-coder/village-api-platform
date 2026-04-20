@@ -25,14 +25,14 @@ const ClientPortal = () => {
   const { data: apiKeys, isLoading } = useQuery({
     queryKey: ['api-keys'],
     queryFn: async () => {
-      const response = await api.get('/client/api-keys');
+      const response = await api.get('client/api-keys');
       return response.data.data;
     },
   });
 
   const createKeyMutation = useMutation({
     mutationFn: async (name: string) => {
-      const response = await api.post('/client/api-keys', { name });
+      const response = await api.post('client/api-keys', { name });
       return response.data.data;
     },
     onSuccess: (data) => {
@@ -50,7 +50,7 @@ const ClientPortal = () => {
 
   const deleteKeyMutation = useMutation({
     mutationFn: async (id: string) => {
-      await api.delete(`/client/api-keys/${id}`);
+      await api.delete(`client/api-keys/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['api-keys'] });

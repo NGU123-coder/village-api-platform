@@ -29,7 +29,7 @@ const Register = () => {
     setLoading(true);
     try {
       console.log('Attempting signup for:', email);
-      const response = await api.post('/auth/register', { email, password });
+      const response = await api.post('auth/register', { email, password });
       
       console.log('Signup successful, logging in...');
       setAuth(response.data.data.user, response.data.data.token);

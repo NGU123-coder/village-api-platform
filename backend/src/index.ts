@@ -46,7 +46,8 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-Request-Id']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-Request-Id'],
+  exposedHeaders: ['x-api-key']
 }));
 
 app.use(helmet({

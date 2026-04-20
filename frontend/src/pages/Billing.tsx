@@ -52,7 +52,7 @@ const Billing = () => {
 
   const checkoutMutation = useMutation({
     mutationFn: async (planType: string) => {
-      const response = await api.post('/billing/checkout', { planType });
+      const response = await api.post('billing/checkout', { planType });
       return response.data.data;
     },
     onSuccess: (data) => {
@@ -69,7 +69,7 @@ const Billing = () => {
   const { data: payments } = useQuery({
     queryKey: ['payments'],
     queryFn: async () => {
-        const response = await api.get('/billing/history');
+        const response = await api.get('billing/history');
         return response.data.data;
     }
   });

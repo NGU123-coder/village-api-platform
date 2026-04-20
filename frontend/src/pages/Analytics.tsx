@@ -24,7 +24,7 @@ const Analytics = () => {
   const { data: apiKeys } = useQuery({
     queryKey: ['api-keys'],
     queryFn: async () => {
-      const response = await api.get('/client/api-keys');
+      const response = await api.get('client/api-keys');
       return response.data.data;
     },
   });
@@ -34,7 +34,7 @@ const Analytics = () => {
     queryKey: ['analytics-summary', days, selectedKey],
     queryFn: async () => {
       console.log('📡 Fetching summary with token:', localStorage.getItem('token')?.substring(0, 10) + '...');
-      const response = await api.get('/analytics/summary', {
+      const response = await api.get('analytics/summary', {
         params: { days, apiKeyId: selectedKey === 'all' ? undefined : selectedKey }
       });
       return response.data.data;
@@ -49,7 +49,7 @@ const Analytics = () => {
     const { data: trends } = useQuery({
     queryKey: ['analytics-trends', days, selectedKey],
     queryFn: async () => {
-      const response = await api.get('/analytics/requests-over-time', {
+      const response = await api.get('analytics/requests-over-time', {
         params: { days, apiKeyId: selectedKey === 'all' ? undefined : selectedKey }
       });
       return response.data.data;
@@ -60,7 +60,7 @@ const Analytics = () => {
     const { data: topEndpoints } = useQuery({
     queryKey: ['analytics-endpoints', selectedKey],
     queryFn: async () => {
-      const response = await api.get('/analytics/top-endpoints', {
+      const response = await api.get('analytics/top-endpoints', {
         params: { apiKeyId: selectedKey === 'all' ? undefined : selectedKey }
       });
       return response.data.data;
