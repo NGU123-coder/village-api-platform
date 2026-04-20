@@ -14,7 +14,7 @@ const ClientPortal = () => {
   const [showModal, setShowModal] = useState(false);
   const [generatedKey, setGeneratedKey] = useState<{ id: string; secret: string } | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [testApiKey, setTestApiKey] = useState(() => localStorage.getItem('test_api_key') || '');
+  const [testApiKey, setTestApiKey] = useState(() => localStorage.getItem('test_api_key') || '94092d02-6d43-450d-a6f1-1c66cc775246.9cc3806f2d31387e2be0588cde08279f74a86098bbc9857765367a3b3448dc13');
   const [showKey, setShowKey] = useState(false);
 
   // Sync test key to localStorage for persistence
