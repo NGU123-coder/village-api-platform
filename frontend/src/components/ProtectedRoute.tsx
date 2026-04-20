@@ -16,7 +16,10 @@ const ProtectedRoute: React.FC<Props> = ({ children, role }) => {
     return null; 
   }
 
-  if (!token) {
+  // Double check: if state is slow, check localStorage directly
+  const activeToken = token || localStorage.getItem('token');
+
+  if (!activeToken) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

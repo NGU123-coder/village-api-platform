@@ -3,6 +3,11 @@
  */
 
 export const getToken = (): string | null => {
+  // Priority 1: Instant sync key
+  const rawToken = localStorage.getItem('token');
+  if (rawToken) return rawToken;
+
+  // Priority 2: Zustand storage (fallback)
   const authStorage = localStorage.getItem('auth-storage');
   if (authStorage) {
     try {

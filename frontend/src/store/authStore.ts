@@ -25,10 +25,12 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isHydrated: false,
       setAuth: (user, token) => {
+        localStorage.setItem('token', token); // Instant sync
         set({ user, token });
       },
       setUser: (user) => set({ user }),
       logout: () => {
+        localStorage.removeItem('token'); // Instant sync
         set({ user: null, token: null });
       },
       setHydrated: (val) => set({ isHydrated: val }),
