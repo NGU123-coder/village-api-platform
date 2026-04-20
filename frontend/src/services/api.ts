@@ -14,10 +14,18 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  // 2. Check for an API Key in localStorage (for Playground or demo purposes)
-  const apiKey = localStorage.getItem('test_api_key');
-  if (apiKey && !config.headers['x-api-key']) {
+  // 2. Automatically attach API Key if present in localStorage
+  const apiKey = localStorage.getItem('apiKey');
+  if (apiKey) {
+    // Temporary debug log as requested
+    console.log("Sending API Key:", apiKey);
     config.headers['x-api-key'] = apiKey;
+  }
+
+  // 3. Fallback for Playground (if apiKey is missing but test_api_key exists)
+  const testKey = localStorage.getItem('test_api_key');
+  if (testKey && !config.headers['x-api-key']) {
+    config.headers['x-api-key'] = testKey;
   }
 
   return config;

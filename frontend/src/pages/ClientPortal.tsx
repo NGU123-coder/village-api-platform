@@ -38,7 +38,12 @@ const ClientPortal = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['api-keys'] });
       setNewKeyName('');
+      const fullKey = `${data.id}.${data.secret}`;
       setGeneratedKey({ id: data.id, secret: data.secret });
+      
+      // Automatically store as the active key for the platform
+      localStorage.setItem('apiKey', fullKey);
+      
       setShowModal(true);
     },
   });
