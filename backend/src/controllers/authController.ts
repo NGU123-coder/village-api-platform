@@ -52,7 +52,7 @@ export const register = async (req: Request, res: Response) => {
     // 5. Generate Token
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'fallback_secret',
+      process.env.JWT_SECRET || 'village_api_platform_secret_2026',
       { expiresIn: '24h' }
     );
 
@@ -113,7 +113,7 @@ export const login = async (req: Request, res: Response) => {
 
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'fallback_secret',
+      process.env.JWT_SECRET || 'village_api_platform_secret_2026',
       { expiresIn: '24h' }
     );
 
