@@ -22,6 +22,7 @@ const port = process.env.PORT || 5000;
 const isProd = process.env.NODE_ENV === 'production';
 
 // 1. GLOBAL MIDDLEWARE (ORDER IS CRITICAL)
+app.set('trust proxy', 1); // Trust Render's proxy for accurate IP tracking (Rate Limiting)
 
 // A. Parse JSON bodies FIRST
 app.use(express.json());
