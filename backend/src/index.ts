@@ -17,18 +17,22 @@ import analyticsRoutes from './routes/analyticsRoutes';
 import billingRoutes from './routes/billingRoutes';
 import { logger } from './utils/logger';
 
+// MANDATORY: Guard against missing environment variables
+if (!process.env.DATABASE_URL) {
+  logger.error("FATAL: DATABASE_URL is not defined");
+  process.exit(1);
+}
+
 const app = express();
 const port = process.env.PORT || 5000;
 const isProd = process.env.NODE_ENV === 'production';
 
 // 1. GLOBAL MIDDLEWARE (ORDER IS CRITICAL)
-app.set('trust proxy', 1); // Trust Render's proxy for accurate IP tracking (Rate Limiting)
+app.set('trust proxy', 1); // Trust Render's proxy for accurate IP tracking
 
-// A. Parse JSON bodies FIRST
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// B. Enable CORS early to handle preflights
 const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173'].filter(Boolean);
 app.use(cors({
   origin: (origin, callback) => {
@@ -44,12 +48,11 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-Request-Id']
 }));
 
-// C. Security Headers
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// D. Request Context & Elite Logging
+// Request Context & Elite Logging
 app.use((req: any, res, next) => {
   req.requestId = uuidv4();
   res.setHeader('X-Request-Id', req.requestId);
@@ -60,7 +63,7 @@ morgan.token('id', (req: any) => req.requestId);
 morgan.token('body', (req: any) => isProd ? '' : JSON.stringify(req.body));
 
 app.use(morgan('[:id] :method :url :status :response-time ms - :body', {
-  skip: (req) => req.url.startsWith('/health')
+  skip: (req) => req.url.startsWith('/api/v1/health')
 }));
 
 // 2. Rate Limiting
@@ -71,7 +74,40 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// 3. Swagger Documentation Setup
+// 3. PUBLIC SYSTEM ROUTES (NO AUTH REQUIRED)
+// These must be mounted BEFORE any middleware-protected groups
+
+app.get('/', (req, res) => {
+  res.status(200).json({ success: true, message: 'API is running 🚀' });
+});
+
+app.get('/api/v1/health/live', (req, res) => {
+  res.status(200).json({ success: true, message: 'Process is alive' });
+});
+
+app.get('/api/v1/health/db', async (req: any, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({ success: true, message: 'Database connected' });
+  } catch (e: any) {
+    logger.error('DB Health Check Failed', { requestId: req.requestId, error: e.message });
+    res.status(503).json({ success: false, message: 'Database unreachable' });
+  }
+});
+
+// 4. PROTECTED ROUTES
+
+// A. JWT Protected Routes (User Sessions)
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/client', clientRoutes);
+app.use('/api/v1/billing', billingRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
+
+// B. API Key Protected Routes (Core Data)
+// The apiKeyMiddleware is usually embedded inside geoRoutes.ts
+app.use('/api/v1', geoRoutes);
+
+// 5. Swagger Documentation
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -86,34 +122,6 @@ const swaggerOptions = {
 };
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// 4. API Routes (Versioned)
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/client', clientRoutes);
-app.use('/api/v1/billing', billingRoutes);
-
-// Mount specific analytics path BEFORE generic /v1 path
-app.use('/api/v1/analytics', analyticsRoutes);
-app.use('/api/v1', geoRoutes);
-
-// 5. System & Health Routes
-app.get('/', (req, res) => {
-  res.status(200).json({ success: true, message: 'API is running 🚀' });
-});
-
-app.get('/health/live', (req, res) => {
-  res.status(200).json({ success: true, message: 'Process is alive' });
-});
-
-app.get('/health/ready', async (req: any, res) => {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    res.status(200).json({ success: true, data: { status: 'READY', database: 'CONNECTED' } });
-  } catch (e: any) {
-    logger.error('Readiness probe failed', { requestId: req.requestId, error: e.message });
-    res.status(503).json({ success: false, data: { status: 'NOT_READY', database: 'DISCONNECTED' } });
-  }
-});
 
 // 6. 404 & Error Handling
 app.use((req, res) => {
