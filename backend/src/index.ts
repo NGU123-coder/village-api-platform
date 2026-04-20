@@ -21,7 +21,11 @@ const app = express();
 const port = process.env.PORT || 5000;
 const isProd = process.env.NODE_ENV === 'production';
 
-// 1. Request Context & Elite Logging
+// 1. Core Middleware (Must be before routes)
+app.use(express.json()); // Essential for parsing req.body
+app.use(express.urlencoded({ extended: true }));
+
+// 2. Request Context & Elite Logging
 app.use((req: any, res, next) => {
   req.requestId = uuidv4();
   res.setHeader('X-Request-Id', req.requestId);
@@ -33,44 +37,28 @@ app.use(morgan('[:id] :method :url :status :response-time ms', {
   skip: (req) => req.url.startsWith('/health')
 }));
 
-// 2. Security & Core Middleware
-app.use(helmet());
-app.use(express.json());
+// 3. Security Middleware (Configured for Production)
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
-// Request Timeout Middleware (5 seconds) with cleanup
-app.use((req: any, res, next) => {
-  const timeoutId = setTimeout(() => {
-    if (!res.headersSent) {
-      logger.warn('Request timeout reached', { requestId: req.requestId, url: req.originalUrl });
-      res.status(503).json({ success: false, message: 'Request timeout' });
-    }
-  }, 5000);
-
-  res.on('finish', () => clearTimeout(timeoutId));
-  res.on('close', () => clearTimeout(timeoutId));
-  next();
-});
-
-// 2. Secure CORS Configuration
+// 4. Secure CORS Configuration
 const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173'].filter(Boolean);
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, or Postman)
-    // Also allow any origin in development
     if (!origin || !isProd) return callback(null, true);
-
-    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      // For debugging: log the blocked origin
-      logger.warn('Blocked by CORS', { origin });
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'X-Request-Id']
 }));
 
-// 3. Rate Limiting
+// 5. Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isProd ? 100 : 1000,
@@ -78,32 +66,14 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// 4. Swagger Documentation
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Village API Platform',
-      version: '1.0.0',
-      description: 'Comprehensive geographical data API for Indian villages',
-    },
-    servers: [{ url: isProd ? 'https://village-api-platform.onrender.com' : `http://localhost:${port}` }],
-  },
-  apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
-};
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// 5. API Routes (Versioned)
+// 6. API Routes (Versioned)
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/client', clientRoutes);
 app.use('/api/v1/billing', billingRoutes);
-
-// Mount specific analytics path BEFORE generic /v1 path
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1', geoRoutes);
 
-// 6. System & Health Routes
+// 7. System & Health Routes
 app.get('/', (req, res) => {
   res.status(200).json({ success: true, message: 'API is running 🚀' });
 });
@@ -122,7 +92,7 @@ app.get('/health/ready', async (req: any, res) => {
   }
 });
 
-// 7. 404 & Error Handling
+// 8. 404 & Error Handling
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
 });
@@ -144,7 +114,7 @@ app.use((err: any, req: any, res: express.Response, next: express.NextFunction) 
   });
 });
 
-// 8. Server Lifecycle & Graceful Shutdown
+// 9. Start server & Graceful Shutdown
 const server = app.listen(port, () => {
   logger.info(`Server started on port ${port}`, { env: process.env.NODE_ENV });
 });

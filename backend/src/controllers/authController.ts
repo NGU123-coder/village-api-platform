@@ -74,6 +74,8 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
+    // DEBUG: Log request body to identify missing fields
+    console.log('Login Body Received:', req.body);
     const { email, password } = req.body;
     
     if (!email || !password) {

@@ -18,8 +18,14 @@ const Login = () => {
     setError('');
     setLoading(true);
     
+    // DEBUG: Verify payload before sending
+    const payload = { email, password };
+    console.log('Sending Login Payload:', payload);
+    
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/auth/login', payload, {
+        headers: { 'Content-Type': 'application/json' }
+      });
       const { user, token } = response.data.data;
       
       setAuth(user, token);
