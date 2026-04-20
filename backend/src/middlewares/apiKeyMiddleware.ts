@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../config/db';
 
 export interface ApiKeyRequest extends Request {
   apiKey?: any;
@@ -16,7 +14,7 @@ export const authenticateApiKey = async (req: ApiKeyRequest, res: Response, next
   const apiKey = req.headers['x-api-key'] as string;
 
   if (!apiKey) {
-    return res.status(401).json({ error: 'API Key is required' });
+    return res.status(401).json({ success: false, message: 'API Key is required' });
   }
 
   const startTime = Date.now();
@@ -25,7 +23,7 @@ export const authenticateApiKey = async (req: ApiKeyRequest, res: Response, next
     const [keyId, secret] = apiKey.split('.');
     
     if (!keyId || !secret) {
-        return res.status(401).json({ error: 'Invalid API Key format. Expected id.secret' });
+        return res.status(401).json({ success: false, message: 'Invalid API Key format. Expected id.secret' });
     }
 
     // Find the key record
@@ -35,14 +33,14 @@ export const authenticateApiKey = async (req: ApiKeyRequest, res: Response, next
     });
 
     if (!apiKeyRecord || !apiKeyRecord.isActive) {
-      return res.status(401).json({ error: 'Invalid or inactive API Key' });
+      return res.status(401).json({ success: false, message: 'Invalid or inactive API Key' });
     }
 
     // Verify the secret against the hash
     const isValid = await bcrypt.compare(secret, apiKeyRecord.keyHash);
 
     if (!isValid) {
-      return res.status(401).json({ error: 'Invalid API Key secret' });
+      return res.status(401).json({ success: false, message: 'Invalid API Key secret' });
     }
 
     // Attach API key and user info to the request
@@ -70,6 +68,6 @@ export const authenticateApiKey = async (req: ApiKeyRequest, res: Response, next
     next();
   } catch (error) {
     console.error('API Key Auth Error:', error);
-    res.status(500).json({ error: 'Internal server error during authentication' });
+    res.status(500).json({ success: false, message: 'Internal server error during authentication' });
   }
 };

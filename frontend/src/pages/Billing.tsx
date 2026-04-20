@@ -61,7 +61,7 @@ const Billing = () => {
             setUser({ ...user, planType: data.user.planType });
         }
         setShowPaymentModal(null);
-        alert('Payment successful! Your plan has been upgraded.');
+        alert('Payment successful! Your plan has been upgraded. You can now download your invoice from the history below.');
         queryClient.invalidateQueries({ queryKey: ['payments'] });
     },
   });

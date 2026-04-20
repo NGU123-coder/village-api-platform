@@ -9,7 +9,7 @@ import { getPlanConfig } from '../config/planConfig';
  */
 export const quotaMiddleware = async (req: ApiKeyRequest, res: Response, next: NextFunction) => {
   if (!req.apiKey) {
-    return res.status(401).json({ error: 'API Key not authenticated' });
+    return res.status(401).json({ success: false, message: 'API Key not authenticated' });
   }
 
   const { id: apiKeyId } = req.apiKey;
@@ -35,7 +35,7 @@ export const quotaMiddleware = async (req: ApiKeyRequest, res: Response, next: N
     // 3. Enforce Limit
     if (currentUsage >= limit) {
       return res.status(429).json({
-        error: 'Quota Exceeded',
+        success: false,
         message: `You have reached your limit of ${limit} requests for the ${planType} plan.`,
         retryAfter: resetTime
       });
