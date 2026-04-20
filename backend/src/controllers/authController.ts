@@ -50,9 +50,14 @@ export const register = async (req: Request, res: Response) => {
     console.log('User created successfully:', user.id);
 
     // 5. Generate Token
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error('JWT_SECRET is not defined in environment variables');
+    }
+
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'village_api_platform_secret_2026',
+      secret,
       { expiresIn: '24h' }
     );
 
@@ -111,9 +116,14 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error('JWT_SECRET is not defined in environment variables');
+    }
+
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'village_api_platform_secret_2026',
+      secret,
       { expiresIn: '24h' }
     );
 

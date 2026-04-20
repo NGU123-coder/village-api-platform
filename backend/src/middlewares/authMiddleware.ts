@@ -15,7 +15,12 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
         return res.status(401).json({ error: 'Authentication token missing' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET || 'village_api_platform_secret_2026', (err: any, user: any) => {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        return res.status(500).json({ error: 'Internal server error: Security configuration missing' });
+    }
+
+    jwt.verify(token, secret, (err: any, user: any) => {
       if (err) {
         return res.status(401).json({ error: 'Invalid or expired session' });
       }
