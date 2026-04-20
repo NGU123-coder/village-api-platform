@@ -34,38 +34,38 @@ const Analytics = () => {
     queryKey: ['analytics-summary', days, selectedKey],
     queryFn: async () => {
       console.log('📡 Fetching summary with token:', localStorage.getItem('token')?.substring(0, 10) + '...');
-      const response = await api.get('/v1/analytics/summary', {
+      const response = await api.get('/analytics/summary', {
         params: { days, apiKeyId: selectedKey === 'all' ? undefined : selectedKey }
       });
       return response.data.data;
     },
-  });
+    });
 
-  if (summaryError) {
+    if (summaryError) {
     console.error('❌ Analytics Fetch Error:', summaryError);
-  }
+    }
 
-  // Fetch Trends
-  const { data: trends } = useQuery({
+    // Fetch Trends
+    const { data: trends } = useQuery({
     queryKey: ['analytics-trends', days, selectedKey],
     queryFn: async () => {
-      const response = await api.get('/v1/analytics/requests-over-time', {
+      const response = await api.get('/analytics/requests-over-time', {
         params: { days, apiKeyId: selectedKey === 'all' ? undefined : selectedKey }
       });
       return response.data.data;
     },
-  });
+    });
 
-  // Fetch Top Endpoints
-  const { data: topEndpoints } = useQuery({
+    // Fetch Top Endpoints
+    const { data: topEndpoints } = useQuery({
     queryKey: ['analytics-endpoints', selectedKey],
     queryFn: async () => {
-      const response = await api.get('/v1/analytics/top-endpoints', {
+      const response = await api.get('/analytics/top-endpoints', {
         params: { apiKeyId: selectedKey === 'all' ? undefined : selectedKey }
       });
       return response.data.data;
     },
-  });
+    });
 
   const pieData = [
     { name: 'Success', value: summary?.successRate || 0 },
