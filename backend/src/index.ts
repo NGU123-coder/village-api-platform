@@ -15,6 +15,7 @@ import clientRoutes from './routes/clientRoutes';
 import geoRoutes from './routes/geoRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
 import billingRoutes from './routes/billingRoutes';
+import debugRoutes from './routes/debugRoutes';
 import { logger } from './utils/logger';
 
 // MANDATORY: Guard against missing environment variables
@@ -76,6 +77,8 @@ app.use('/api/', limiter);
 
 // 3. PUBLIC SYSTEM ROUTES (NO AUTH REQUIRED)
 // These must be mounted BEFORE any middleware-protected groups
+
+app.use('/api/v1/debug', debugRoutes);
 
 app.get('/', (req, res) => {
   res.status(200).json({ success: true, message: 'API is running 🚀' });
