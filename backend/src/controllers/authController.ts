@@ -72,19 +72,24 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+const loginSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(1, 'Password is required'),
+});
+
 export const login = async (req: Request, res: Response) => {
   try {
-    // DEBUG: Log request body to identify missing fields
-    console.log('Login Body Received:', req.body);
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
+    // 1. Validation
+    const validation = loginSchema.safeParse(req.body);
+    if (!validation.success) {
+      const firstError = validation.error.issues[0];
       return res.status(400).json({ 
         success: false,
-        message: 'Email and password are required' 
+        message: firstError?.message || 'Validation failed' 
       });
     }
 
+    const { email, password } = validation.data;
     console.log('Login attempt:', email);
 
     const user = await prisma.user.findUnique({ where: { email } });
