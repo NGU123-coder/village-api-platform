@@ -40,4 +40,18 @@ router.get('/connection-test', async (req, res) => {
   }
 });
 
+router.get('/search-test', async (req, res) => {
+  const q = (req.query.q as string || 'a').trim();
+  try {
+    const results = await prisma.village.findMany({
+      where: { name: { contains: q, mode: 'insensitive' } },
+      take: 5,
+      include: { subDistrict: { include: { district: { include: { state: true } } } } }
+    });
+    res.json({ success: true, count: results.length, data: results });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
