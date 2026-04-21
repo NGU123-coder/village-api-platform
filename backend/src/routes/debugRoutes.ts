@@ -5,15 +5,23 @@ const router = Router();
 
 router.get('/connection-test', async (req, res) => {
   try {
-    const stateCount = await prisma.state.count();
-    const userCount = await prisma.user.count();
-    const apiKeyCount = await prisma.apiKey.count();
+    const [stateCount, districtCount, subDistrictCount, villageCount, userCount, apiKeyCount] = await Promise.all([
+      prisma.state.count(),
+      prisma.district.count(),
+      prisma.subDistrict.count(),
+      prisma.village.count(),
+      prisma.user.count(),
+      prisma.apiKey.count()
+    ]);
     
     res.json({
       success: true,
       message: "Backend is healthy and connected to DB",
       database: {
         states: stateCount,
+        districts: districtCount,
+        subDistricts: subDistrictCount,
+        villages: villageCount,
         users: userCount,
         apiKeys: apiKeyCount
       },

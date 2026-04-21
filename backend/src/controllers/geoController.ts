@@ -136,8 +136,14 @@ export const autocomplete = async (req: Request, res: Response) => {
           LIMIT 10;
         `;
     } catch (e) {
+        console.warn('Advanced search failed, falling back to basic search:', e);
         const prismaResults = await prisma.village.findMany({
-            where: { name: { contains: q } },
+            where: { 
+              name: { 
+                contains: q,
+                mode: 'insensitive' 
+              } 
+            },
             select: {
                 id: true,
                 name: true,
