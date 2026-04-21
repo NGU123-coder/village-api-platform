@@ -47,11 +47,16 @@ export const createApiKey = async (req: any, res: Response) => {
 export const deleteApiKey = async (req: any, res: Response) => {
   try {
     const { id } = req.params;
-    await prisma.apiKey.deleteMany({
-      where: { id, userId: req.user.userId },
-    });
-    res.json({ success: true, data: { message: 'API Key deleted successfully' } });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to delete API key' });
+    
+    // Perform deletion in a transaction to ensure logs are cleared first
+    await prisma.$transaction([
+        prisma.apiLog.deleteMany({ where: { apiKeyId: id } }),
+        prisma.apiKey.deleteMany({ where: { id, userId: req.user.userId } })
+    ]);
+
+    res.json({ success: true, data: { message: 'API Key and related logs deleted successfully' } });
+  } catch (error: any) {
+    console.error('Delete API Key Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete API key. It may have associated usage logs.' });
   }
 };
