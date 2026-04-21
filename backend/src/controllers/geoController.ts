@@ -115,6 +115,7 @@ export const autocomplete = async (req: Request, res: Response) => {
     let results: any[];
     
     try {
+        // Attempt high-performance trigram search (requires pg_trgm extension)
         results = await prisma.$queryRaw`
           SELECT 
             v.id AS value,
@@ -135,8 +136,10 @@ export const autocomplete = async (req: Request, res: Response) => {
             similarity(v.name, ${q}) DESC
           LIMIT 10;
         `;
-    } catch (e) {
-        console.warn('Advanced search failed, falling back to basic search:', e);
+    } catch (e: any) {
+        console.error('Advanced search failed. Potential missing pg_trgm extension. Error:', e.message);
+        
+        // Fallback to standard Prisma search (slower but 100% reliable)
         const prismaResults = await prisma.village.findMany({
             where: { 
               name: { 
